@@ -23,7 +23,7 @@ class SelfAttention(nn.Module):
         # Split embedding into self.heads pieces
         # How is this done?
         values = values.reshape(N, value_len, self.heads, self.head_dim)
-        keys = keys.reshape(N, key_len, self.heads, self.head_dims)
+        keys = keys.reshape(N, key_len, self.heads, self.head_dim)
         queries = query.reshape(N, query_len, self.heads, self.head_dim)
         
         energy = torch.einsum("nqhd, nkhd->nhqk", [queries, keys])
@@ -34,7 +34,7 @@ class SelfAttention(nn.Module):
         # key_len: Source sentence length
         
         if mask is not None:
-            energy = energy.masked_fill(mask == 0, float("-1e20"))
+            energy = energy.masked_fill_(mask == 0, float("-1e20"))
         
         attention = torch.softmax(energy / (self.embed_size ** (1/2)), dim = 3)
         

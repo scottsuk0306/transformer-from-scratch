@@ -1,12 +1,11 @@
-from email.generator import DecodedGenerator
 import torch
 import torch.nn as nn
 
-from model.transformer import TransformerBlock
-from models.layers import SelfAttention
+from models.layers.transformer_block import TransformerBlock
+from models.layers.self_attention import SelfAttention
 
 class DecoderBlock(nn.Module):
-    def __init(self, embed_size, heads, forward_expansion, dropout, device):
+    def __init__(self, embed_size, heads, forward_expansion, dropout, device):
         super(DecoderBlock, self).__init__()
         self.attention = SelfAttention(embed_size, heads)
         self.norm = nn.LayerNorm(embed_size)
@@ -27,18 +26,17 @@ class Decoder(nn.Module):
                  embed_size,
                  num_layers,
                  heads,
+                 device,
                  forward_expansion,
                  dropout,
-                 device,
-                 max_length
-    ):
+                 max_length,
+                ):
         super(Decoder, self).__init__()
         self.device = device
-        self.word_embedding(trg_vocab_size, embed_size)
+        self.word_embedding = nn.Embedding(trg_vocab_size, embed_size)
         self.position_embedding = nn.Embedding(max_length, embed_size)
         self.layers = nn.ModuleList(
-            [DecoderBlock(embed_size, heads, forward_expansion, dropout, device)
-             for _ in range(num_layers)]
+            [DecoderBlock(embed_size, heads, forward_expansion, dropout, device) for _ in range(num_layers)]
         )
         self.fc_out = nn.Linear(embed_size, trg_vocab_size)
         self.dropout = nn.Dropout(dropout)

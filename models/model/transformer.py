@@ -1,33 +1,7 @@
 import torch
 import torch.nn as nn
-
-from models.layers.self_attention import SelfAttention
-from models.model import Decoder
-from models.model import Encoder
-
-def TransformerBlock(nn.Module):
-    def __init__(self, embed_size, heads, dropout, forward_expansion):
-        super(TransformerBlock, self).__init__()
-        self.attention = SelfAttention(embed_size, heads)
-        self.norm1 = nn.LayerNorm(embed_size)
-        self.norm2 = nn.LayerNorm(embed_size)
-        
-        self.feed_forward = nn.Sequential(
-            nn.Linear(embed_size, forward_expansion * embed_size),
-            nn.ReLU(),
-            nn.Linear(forward_expansion * embed_size, embed_size)
-        )
-        
-        self.dropout = nn.Dropout(dropout)
-        
-    def forward(self, value, key, query, mask):
-        attention = self.attention(value, key, query, map)
-        
-        # Using skip-connection
-        x = self.dropout(self.norm1(attention + query))
-        forward = self.feed_forward(x)
-        out = self.droput(self.norm2(forward + x))
-        return out
+from models.model.decoder import Decoder
+from models.model.encoder import Encoder
 
 class Transformer(nn.Module):
     def __init__(
@@ -57,7 +31,7 @@ class Transformer(nn.Module):
             max_length
         )
         
-        self.encoder = Decoder(
+        self.decoder = Decoder(
             trg_vocab_size,
             embed_size,
             num_layers,
@@ -65,9 +39,12 @@ class Transformer(nn.Module):
             device,
             forward_expansion,
             dropout,
-            device,
             max_length
         )
+        
+        self.src_pad_idx = src_pad_idx
+        self.trg_pad_idx = trg_pad_idx
+        self.device = device
     
     def make_src_mask(self, src):
         src_mask = (src != self.src_pad_idx).unsqueeze(1).unsqueeze(2)
@@ -77,7 +54,7 @@ class Transformer(nn.Module):
     def make_trg_mask(self, trg):
         N, trg_len = trg.shape
         trg_mask = torch.tril(torch.ones(trg_len, trg_len)).expand(
-            N, 1, trg_len, trg_lens
+            N, 1, trg_len, trg_len
         )
         return trg_mask.to(self.device)
     
