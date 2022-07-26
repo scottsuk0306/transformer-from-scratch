@@ -39,3 +39,9 @@ class Encoder(nn.Module):
         positions = torch.arange(0, seq_length).expand(N, seq_length)
         # tensor([0, 1, ..., seq_length-1, seq_length] * N): similar to 2d array
         
+        out = self.dropout(self.word_embedding + self.position_embedding(positions))
+        
+        for layer in self.layers:
+            out = layer(out, out, out, mask)
+            
+        return out
