@@ -26,6 +26,10 @@ class SelfAttention(nn.Module):
         keys = keys.reshape(N, key_len, self.heads, self.head_dim)
         queries = query.reshape(N, query_len, self.heads, self.head_dim)
         
+        values = self.values(values)
+        keys = self.keys(keys)
+        queries = self.queries(queries)
+        
         energy = torch.einsum("nqhd, nkhd->nhqk", [queries, keys])
         # queries shape: (N, query_len, heads, head_dim)
         # keys shape: (N, key_len, heads, head_dim)
@@ -33,8 +37,10 @@ class SelfAttention(nn.Module):
         # query_len: Target sentence length
         # key_len: Source sentence length
         
+        e = 1e-12
+            
         if mask is not None:
-            energy = energy.masked_fill_(mask == 0, float("-1e20"))
+            energy = energy.masked_fill(mask == 0, -e)
         
         attention = torch.softmax(energy / (self.embed_size ** (1/2)), dim = 3)
         

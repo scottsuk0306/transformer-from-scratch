@@ -43,10 +43,11 @@ class Decoder(nn.Module):
         
     def forward(self, x, enc_out, src_mask, trg_mask):
         N, seq_length = x.shape
-        positions = torch.arange(0, seq_length).expand(N, seq_length).to(self.divice)
+        positions = torch.arange(0, seq_length).expand(N, seq_length).to(self.device)
         x = self.dropout((self.word_embedding(x) + self.position_embedding(positions)))
         
         for layer in self.layers:
             out = layer(x, enc_out, enc_out, src_mask, trg_mask)
             
         out = self.fc_out(x)
+        return out
