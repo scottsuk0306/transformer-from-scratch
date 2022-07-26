@@ -1,2 +1,2 @@
 # transformer-from-scratch
-Unofficial Implementation of Transformers
+My own implementation of Transformers
